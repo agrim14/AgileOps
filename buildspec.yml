@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 082487810893.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      - docker build --platform linux/amd64 -t 082487810893.dkr.ecr.us-east-1.amazonaws.com/agileops-repo:latest .
+  post_build:
+    commands:
+      - docker push 082487810893.dkr.ecr.us-east-1.amazonaws.com/agileops-repo:latest
+      - printf '[{"name":"agileops-web-container","imageUri":"082487810893.dkr.ecr.us-east-1.amazonaws.com/agileops-repo:latest"}]' > imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
