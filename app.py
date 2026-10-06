@@ -36,9 +36,9 @@ def home():
                     ]
                 }
                 
-                # Correct Model ID for Claude Sonnet 4.5
+                # FIXED: Added 'us.' to use the correct regional inference profile
                 response = bedrock.invoke_model(
-                    modelId='anthropic.claude-sonnet-4-5-20250929-v1:0', 
+                    modelId='us.anthropic.claude-sonnet-4-5-20250929-v1:0', 
                     contentType='application/json',
                     accept='application/json',
                     body=json.dumps(payload)
@@ -47,7 +47,7 @@ def home():
                 response_body = json.loads(response['body'].read())
                 ai_response = response_body.get('content', [{}])[0].get('text', 'No response generated.')
             except Exception as e:
-                ai_response = f"Bedrock AI Error: {str(e)} (Ensure Bedrock model access is enabled in us-east-1)"
+                ai_response = f"Bedrock AI Error: {str(e)}"
 
     # Modern Enterprise Cloud Dashboard UI template
     html_template = """
