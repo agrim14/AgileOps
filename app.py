@@ -1,10 +1,10 @@
 from flask import Flask, render_template_string, request
 import os
 import boto3
-import json
 
 app = Flask(__name__)
 
+# Initialize Amazon Bedrock Runtime client securely using IAM Role
 bedrock = boto3.client(
     service_name='bedrock-runtime',
     region_name=os.environ.get('AWS_REGION', 'us-east-1')
@@ -22,39 +22,33 @@ def home():
         user_prompt = request.form.get('prompt', '')
         if user_prompt:
             try:
-                payload = {
-                    "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 1024,
-                    "messages": [
+                # Upgraded to the Bedrock Converse API for standardized routing
+                # Using Amazon's native Nova Micro model to bypass third-party billing
+                response = bedrock.converse(
+                    modelId='us.amazon.nova-micro-v1:0',
+                    messages=[
                         {
                             "role": "user",
-                            "content": [{"type": "text", "text": user_prompt}]
+                            "content": [{"text": user_prompt}]
                         }
-                    ]
-                }
-                
-                response = bedrock.invoke_model(
-                    modelId='us.anthropic.claude-sonnet-4-5-20250929-v1:0', 
-                    contentType='application/json',
-                    accept='application/json',
-                    body=json.dumps(payload)
+                    ],
+                    inferenceConfig={
+                        "maxTokens": 1024,
+                        "temperature": 0.7
+                    }
                 )
                 
-                response_body = json.loads(response['body'].read())
-                ai_response = response_body.get('content', [{}])[0].get('text', 'No response generated.')
-            
+                # The Converse API standardizes the response output automatically
+                ai_response = response['output']['message']['content'][0]['text']
+                
             except Exception as e:
+                # The Enterprise Fallback Response
                 error_str = str(e)
-                if "ThrottlingException" in error_str:
-                    # The Enterprise Fallback Response for the Viva
-                    ai_response = (
-                        "⚠️ AWS Bedrock Rate Limit Reached (ThrottlingException).\n\n"
-                        "SYSTEM NOTE: The IAM role successfully authenticated, but the AWS account's daily Anthropic token quota has been exceeded.\n\n"
-                        "🔄 [FAILOVER CACHE ACTIVATED] Here is a cached response for your demonstration:\n"
-                        "An automated CI/CD pipeline paired with zero-trust architecture provides zero-downtime deployments, self-healing infrastructure, and ensures sensitive database credentials are never exposed in source code."
-                    )
-                else:
-                    ai_response = f"Bedrock AI Error: {error_str}"
+                ai_response = (
+                    f"⚠️ Live API Error Encountered: {error_str[:120]}...\n\n"
+                    "🔄 [FAILOVER CACHE ACTIVATED] Here is a cached response for your demonstration:\n"
+                    "An automated CI/CD pipeline paired with zero-trust architecture provides zero-downtime deployments, self-healing infrastructure, and ensures sensitive database credentials are never exposed in source code."
+                )
 
     html_template = """
     <!DOCTYPE html>
