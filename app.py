@@ -24,7 +24,7 @@ def home():
         user_prompt = request.form.get('prompt', '')
         if user_prompt:
             try:
-                # Updated Payload for Anthropic Claude Sonnet 4.5
+                # Payload for Claude Sonnet 4.5
                 payload = {
                     "anthropic_version": "bedrock-2023-05-31",
                     "max_tokens": 1024,
@@ -36,16 +36,15 @@ def home():
                     ]
                 }
                 
-                # Updated Model ID for Claude Sonnet 4.5
+                # Correct Model ID for Claude Sonnet 4.5
                 response = bedrock.invoke_model(
-                    modelId='global.anthropic.claude-sonnet-4-5-20250929-v1:0', 
+                    modelId='anthropic.claude-sonnet-4-5-20250929-v1:0', 
                     contentType='application/json',
                     accept='application/json',
                     body=json.dumps(payload)
                 )
                 
                 response_body = json.loads(response['body'].read())
-                # Parse Anthropic's specific response structure
                 ai_response = response_body.get('content', [{}])[0].get('text', 'No response generated.')
             except Exception as e:
                 ai_response = f"Bedrock AI Error: {str(e)} (Ensure Bedrock model access is enabled in us-east-1)"
