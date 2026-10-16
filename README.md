@@ -9,7 +9,7 @@
 ## Overview
 AgileOps is a production-grade, fault-tolerant cloud architecture designed to eliminate manual deployment fragility. It implements a fully autonomous CI/CD pipeline, zero-trust secrets management, self-healing container orchestration, and a resilient Generative AI intelligence layer natively within AWS.
 
-![AgileOps Architecture](Link-to-your-architecture-diagram-image-here)
+![AgileOps Architecture](architecture.png)
 
 ## Core Capabilities
 
